@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionare Entități</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            flex-grow: 1;
+        }
+
+        .close-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .close-btn:hover {
+            background-color: #ff1a1a;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        fieldset {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        legend {
+            padding: 0 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select, textarea, button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        input[readonly], textarea[readonly] {
+            background-color: #f9f9f9;
+        }
+
+        .form-group.buttons {
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Gestionare Entități</h1>
+        <button class="close-btn" onclick="closeWindow()">X</button>
+    </div>
+
+    <form id="entity-form">
+        <!-- Add Entity Section -->
+        <fieldset>
+            <legend>Adăugare Entitate</legend>
+            <div class="form-group">
+                <label for="entityType">Tip Entitate:</label>
+                <select id="entityType" name="entityType" onchange="loadEntityForm()">
+                    <option value="">Selectați Tipul de Entitate</option>
+                    <option value="angajat">Angajat</option>
+                    <option value="client">Client</option>
+                    <option value="contract">Contract</option>
+                    <option value="factura">Factura</option>
+                    <option value="plata">Plata</option>
+                    <option value="vehicul">Vehicul</option>
+                    <option value="marketing">Marketing</option>
+                </select>
+            </div>
+
+            <div id="entityFormDetails"></div>
+
+            <div class="form-group buttons">
+                <button type="button" id="saveEntity">Salvare Entitate</button>
+                <button type="button" id="cancelEntity">Renunțare</button>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+<script>
+    function closeWindow() {
+        window.close();
+    }
+
+    function loadEntityForm() {
+        var entityType = document.getElementById('entityType').value;
+        var entityFormDetails = document.getElementById('entityFormDetails');
+
+        entityFormDetails.innerHTML = '';
+
+        if (entityType === 'angajat') {
+            entityFormDetails.innerHTML = `
+                    <div class="form-group">
+                        <label for="nume">Nume:</label>
+                        <input type="text" id="nume" name="nume">
+                    </div>
+                    <div class="form-group">
+                        <label for="prenume">Prenume:</label>
+                        <input type="text" id="prenume" name="prenume">
+                    </div>
+                `;
+        } else if (entityType === 'client') {
+            entityFormDetails.innerHTML = `
+                    <div class="form-group">
+                        <label for="numeClient">Nume:</label>
+                        <input type="text" id="numeClient" name="numeClient">
+                    </div>
+                    <div class="form-group">
+                        <label for="istoricAchizitii">Istoric Achiziții:</label>
+                        <input type="text" id="istoricAchizitii" name="istoricAchizitii">
+                    </div>
+                `;
+        } else if (entityType === 'contract') {
+            entityFormDetails.innerHTML = `
+                    <div class="form-group">
+                        <label for="dateClient">Date Client:</label>
+                        <input type="text" id="dateClient" name="dateClient">
+                    </div>
+                    <div class="form-group">
+                        <label for="detaliiVehicul">Detalii Vehicul:</label>
+                        <input type="text" id="detaliiVehicul" name="detaliiVehicul">
+                    </div>
+                    <div class="form-group">
+                        <label for="termeniSiConditii">Termeni și Condiții:</label>
+                        <input type="text" id="termeniSiConditii" name="termeniSiConditii">
+                    </div>
+                `;
+        } else if (entityType === 'factura') {
+            entityFormDetails.innerHTML = `
+                    <div class="form-group">
+                        <label for="detaliiVanzare">Detalii Vânzare:</label>
+                        <input type="text" id="detaliiVanzare" name="detaliiVanzare">
+                    </div>
+                    <div class="form-group">
+                        <label for="sume">Sume:</label>
+                        <input type="text" id="sume" name="sume">
+                    </div>
+                `;
+        } else if (entityType === 'plata') {
+            entityFormDetails.innerHTML = `
+                    <div class="form-group">
+                        <label for="sumaPlatita">Suma Plătită:</label>
+                        <input type="text" id="sumaPlatita" name="sumaPlatita">
+                    </div>
+                    <div class="form-group">
+                        <label for="dataPlatii">Data Plății:</label>
+                        <input type="date" id="dataPlatii" name="dataPlatii">
+                    </div>
+                `;
+        } else if (entityType === 'vehicul') {
+            entityFormDetails.innerHTML = `
+                    <div class="form-group">
+                        <label for="caracteristici">Caracteristici:</label>
+                        <input type="text" id="caracteristici" name="caracteristici">
+                    </div>
+                    <div class="form-group">
+                        <label for="preturi">Prețuri:</label>
+                        <input type="text" id="preturi" name="preturi">
+                    </div>
+                `;
+        } else if (entityType === 'marketing') {
+            entityFormDetails.innerHTML = `
+                    <div class="form-group">
+                        <label for="numeCampanie">Nume Campanie:</label>
+                        <input type="text" id="numeCampanie" name="numeCampanie">
+                    </div>
+                    <div class="form-group">
+                        <label for="tipCampanie">Tip Campanie:</label>
+                        <input type="text" id="tipCampanie" name="tipCampanie">
+                    </div>
+                `;
+        }
+    }
+
+    document.getElementById('saveEntity').addEventListener('click', function() {
+        var entityType = document.getElementById('entityType').value;
+        var entityData = {};
+
+        if (entityType === 'angajat') {
+            entityData = {
+                nume: document.getElementById('nume').value,
+                prenume: document.getElementById('prenume').value
+            };
+        } else if (entityType === 'client') {
+            entityData = {
+                nume: document.getElementById('numeClient').value,
+                istoricAchizitii: document.getElementById('istoricAchizitii').value
+            };
+        } else if (entityType === 'contract') {
+            entityData = {
+                dateClient: document.getElementById('dateClient').value,
+                detaliiVehicul: document.getElementById('detaliiVehicul').value,
+                termeniSiConditii: document.getElementById('termeniSiConditii').value
+            };
+        } else if (entityType === 'factura') {
+            entityData = {
+                detaliiVanzare: document.getElementById('detaliiVanzare').value,
+                sume: document.getElementById('sume').value
+            };
+        } else if (entityType === 'plata') {
+            entityData = {
+                sumaPlatita: document.getElementById('sumaPlatita').value,
+                dataPlatii: document.getElementById('dataPlatii').value
+            };
+        } else if (entityType === 'vehicul') {
+            entityData = {
+                caracteristici: document.getElementById('caracteristici').value,
+                preturi: document.getElementById('preturi').value
+            };
+        } else if (entityType === 'marketing') {
+            entityData = {
+                numeCampanie: document.getElementById('numeCampanie').value,
+                tipCampanie: document.getElementById('tipCampanie').value
+            };
+        }
+
+        fetch('/api/entities/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ entityType: entityType, entityData: entityData })
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert('Entitatea a fost salvată.');
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Eroare:', error);
+            });
+    });
+
+    document.getElementById('cancelEntity').addEventListener('click', function() {
+        document.getElementById('entity-form').reset();
+        document.getElementById('entityFormDetails').innerHTML = '';
+    });
+</script>
+</body>
+</html>

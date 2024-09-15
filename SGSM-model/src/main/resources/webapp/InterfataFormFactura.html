@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emiterea Facturilor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #b80909;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        fieldset {
+            border: 1px solid #b80909;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        legend {
+            padding: 0 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select, textarea, button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #770570;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: rgba(119, 5, 112, 0.88);
+        }
+
+        .form-group.buttons {
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Emiterea Facturilor</h1>
+    <form id="invoice-form">
+        <fieldset>
+            <legend>Emiterea Facturii</legend>
+            <div class="form-group">
+                <label for="client">Client:</label>
+                <input type="text" id="client" name="client" onchange="updateFormNumber()" required>
+            </div>
+            <div class="form-group">
+                <label for="formNumber">Număr Formular:</label>
+                <input type="text" id="formNumber" name="formNumber" readonly required>
+            </div>
+            <div class="form-group">
+                <label for="invoiceDate">Data Factură:</label>
+                <input type="date" id="invoiceDate" name="invoiceDate" required>
+            </div>
+            <div class="form-group">
+                <label for="vehicle">Vehicul:</label>
+                <select id="vehicle" name="vehicle" onchange="updateVehicleDetails()" required>
+                    <option value="">Selectați Vehiculul</option>
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="vehiclePrice">Preț Vehicul:</label>
+                <input type="text" id="vehiclePrice" name="vehiclePrice" readonly required>
+            </div>
+            <div class="form-group">
+                <label for="vehicleDetails">Detalii Vehicul:</label>
+                <textarea id="vehicleDetails" name="vehicleDetails" rows="4" cols="50" readonly></textarea>
+            </div>
+            <div class="form-group">
+                <label for="vat">TVA (%):</label>
+                <input type="number" id="vat" name="vat" oninput="calculateTotalPrice()" required>
+            </div>
+            <div class="form-group">
+                <label for="totalInvoice">Total Factură:</label>
+                <input type="text" id="totalInvoice" name="totalInvoice" readonly required>
+            </div>
+            <input type="hidden" id="vehicleName" name="vehicleName">
+            <div class="form-group buttons">
+                <button type="button" id="saveInvoice">Salvare Factură</button>
+                <button type="button" id="cancelInvoice">Renunțare</button>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+<script>
+    function loadVehicles() {
+        fetch('/api/vehicule')
+            .then(response => response.json())
+            .then(data => {
+                const vehicleSelect = document.getElementById('vehicle');
+                data.forEach(vehicle => {
+                    const option = document.createElement('option');
+                    option.value = vehicle.id;
+                    option.text = vehicle.name;
+                    option.dataset.price = vehicle.price;
+                    option.dataset.details = vehicle.details || ''; // Assuming details field exists
+                    vehicleSelect.add(option);
+                });
+            })
+            .catch(error => console.error('Eroare la încărcarea vehiculelor:', error));
+    }
+
+    function updateVehicleDetails() {
+        const vehicleSelect = document.getElementById('vehicle');
+        const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
+        const price = selectedOption.dataset.price;
+        const details = selectedOption.dataset.details;
+        document.getElementById('vehiclePrice').value = price;
+        document.getElementById('vehicleDetails').value = details;
+        document.getElementById('vehicleName').value = selectedOption.text; // Set vehicle name
+        calculateTotalPrice();
+    }
+
+    function calculateTotalPrice() {
+        const price = parseFloat(document.getElementById('vehiclePrice').value);
+        const vat = parseFloat(document.getElementById('vat').value);
+        const total = price + (price * (vat / 100));
+        document.getElementById('totalInvoice').value = total.toFixed(2);
+    }
+
+    function updateFormNumber() {
+        fetch('/api/invoices/count')
+            .then(response => response.json())
+            .then(data => {
+                const formNumber = `FRM-${data.count + 1}`;
+                document.getElementById('formNumber').value = formNumber;
+            })
+            .catch(error => console.error('Eroare la actualizarea numărului formularului:', error));
+    }
+
+    document.getElementById('saveInvoice').addEventListener('click', function() {
+        const client = document.getElementById('client').value;
+        const formNumber = document.getElementById('formNumber').value;
+        const invoiceDate = document.getElementById('invoiceDate').value;
+        const vehicleId = document.getElementById('vehicle').value;
+        const vehicleName = document.getElementById('vehicleName').value;
+        const vehiclePrice = document.getElementById('vehiclePrice').value;
+        const vehicleDetails = document.getElementById('vehicleDetails').value;
+        const vat = document.getElementById('vat').value;
+        const totalInvoice = document.getElementById('totalInvoice').value;
+
+        const invoiceData = new URLSearchParams();
+        invoiceData.append('client', client);
+        invoiceData.append('formNumber', formNumber);
+        invoiceData.append('invoiceDate', invoiceDate);
+        invoiceData.append('vehicleId', vehicleId);
+        invoiceData.append('vehicleName', vehicleName);
+        invoiceData.append('vehiclePrice', vehiclePrice);
+        invoiceData.append('vehicleDetails', vehicleDetails);
+        invoiceData.append('vat', vat);
+        invoiceData.append('totalInvoice', totalInvoice);
+
+        fetch('/api/invoices/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: invoiceData.toString()
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert('Factura a fost salvată.');
+                console.log(data);
+                document.getElementById('invoice-form').reset();
+                updateFormNumber(); // Update form number after saving
+            })
+            .catch(error => console.error('Eroare:', error));
+    });
+
+    document.getElementById('cancelInvoice').addEventListener('click', function() {
+        document.getElementById('invoice-form').reset();
+    });
+
+    window.onload = function() {
+        loadVehicles();
+        updateFormNumber(); // Initialize form number on page load
+    };
+</script>
+</body>
+</html>

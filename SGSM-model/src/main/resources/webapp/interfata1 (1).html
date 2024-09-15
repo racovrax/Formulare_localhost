@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creare, Actualizare sau Ștergere Profil Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        fieldset {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        legend {
+            padding: 0 10px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select, textarea, button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .form-group.buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Creare, Actualizare sau Ștergere Profil Client</h2>
+    <form id="client-form">
+        <fieldset>
+            <legend>Detalii Client</legend>
+            <div class="form-group">
+                <label for="client-select">Selectează Client:</label>
+                <select id="client-select" name="clientId" onchange="loadClientData()">
+                    <option value="">Selectează un client</option>
+                    <!-- Opțiunile vor fi populate dinamic -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nume">Nume:</label>
+                <input type="text" id="nume" name="nume" required>
+            </div>
+            <div class="form-group">
+                <label for="prenume">Prenume:</label>
+                <input type="text" id="prenume" name="prenume" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="contact">Număr de Telefon:</label>
+                <input type="tel" id="contact" name="contact" pattern="[0-9]{10}" title="Numarul trebuie sa fie din 10 cifre" required>
+            </div>
+            <div class="form-group">
+                <label for="istoricAchizitii">Istoric Achiziții:</label>
+                <textarea id="istoricAchizitii" name="istoricAchizitii" rows="4" cols="50" required></textarea>
+            </div>
+            <div class="form-group buttons">
+                <button type="button" id="saveClient">Salvare Client</button>
+                <button type="button" id="deleteClient">Șterge Client</button>
+                <button type="button" id="cancelClient">Renunțare</button>
+            </div>
+        </fieldset>
+    </form>
+    <div id="message" class="message"></div>
+</div>
+
+<script>
+    function loadClients() {
+        fetch('/api/clients')
+            .then(response => response.json())
+            .then(data => {
+                const clientSelect = document.getElementById('client-select');
+                clientSelect.innerHTML = '<option value="">Selectează un client</option>'; // Clear previous options
+                data.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    option.text = `${client.nume} ${client.prenume}`;
+                    clientSelect.add(option);
+                });
+            })
+            .catch(error => console.error('Eroare la încărcarea clienților:', error));
+    }
+
+    function loadClientData() {
+        const clientId = document.getElementById('client-select').value;
+        if (clientId) {
+            fetch(`/api/clients/${clientId}`)
+                .then(response => response.json())
+                .then(client => {
+                    document.getElementsByName('clientId')[0].value = client.id;
+                    document.getElementById('nume').value = client.nume;
+                    document.getElementById('prenume').value = client.prenume;
+                    document.getElementById('email').value = client.email;
+                    document.getElementById('contact').value = client.contact;
+                    document.getElementById('istoricAchizitii').value = client.istoricAchizitii;
+                })
+                .catch(error => console.error('Eroare la încărcarea datelor clientului:', error));
+        } else {
+            document.getElementById('client-form').reset();
+        }
+    }
+
+    document.getElementById('saveClient').addEventListener('click', function() {
+        const clientId = document.getElementById('client-select').value;
+        const nume = document.getElementById('nume').value;
+        const prenume = document.getElementById('prenume').value;
+        const email = document.getElementById('email').value;
+        const contact = document.getElementById('contact').value;
+        const istoricAchizitii = document.getElementById('istoricAchizitii').value;
+
+        const clientData = new URLSearchParams();
+        clientData.append('clientId', clientId);
+        clientData.append('nume', nume);
+        clientData.append('prenume', prenume);
+        clientData.append('email', email);
+        clientData.append('contact', contact);
+        clientData.append('istoricAchizitii', istoricAchizitii);
+
+        const action = clientId ? 'update' : 'create';
+        clientData.append('action', action);
+
+        fetch('/api/profil', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: clientData.toString()
+        })
+            .then(response => response.json())
+            .then(data => {
+                const messageDiv = document.getElementById('message');
+                if (data.status === 'success') {
+                    messageDiv.textContent = 'Operațiunea a fost realizată cu succes!';
+                    messageDiv.className = 'message success';
+                    document.getElementById('client-form').reset();
+                    loadClients();
+                } else {
+                    messageDiv.textContent = 'Eroare: ' + data.message;
+                    messageDiv.className = 'message error';
+                }
+            })
+            .catch(error => {
+                const messageDiv = document.getElementById('message');
+                messageDiv.textContent = 'Eroare: ' + error;
+                messageDiv.className = 'message error';
+            });
+    });
+
+    document.getElementById('deleteClient').addEventListener('click', function() {
+        const clientId = document.getElementById('client-select').value;
+
+        if (!clientId) {
+            alert('Selectați un client pentru a șterge.');
+            return;
+        }
+
+        const clientData = new URLSearchParams();
+        clientData.append('clientId', clientId);
+        clientData.append('action', 'delete');
+
+        fetch('/api/profil', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: clientData.toString()
+        })
+            .then(response => response.json())
+            .then(data => {
+                const messageDiv = document.getElementById('message');
+                if (data.status === 'success') {
+                    messageDiv.textContent = 'Clientul a fost șters cu succes!';
+                    messageDiv.className = 'message success';
+                    document.getElementById('client-form').reset();
+                    loadClients();
+                } else {
+                    messageDiv.textContent = 'Eroare: ' + data.message;
+                    messageDiv.className = 'message error';
+                }
+            })
+            .catch(error => {
+                const messageDiv = document.getElementById('message');
+                messageDiv.textContent = 'Eroare: ' + error;
+                messageDiv.className = 'message error';
+            });
+    });
+
+    document.getElementById('cancelClient').addEventListener('click', function() {
+        document.getElementById('client-form').reset();
+    });
+
+    window.onload = loadClients;
+</script>
+</body>
+</html>

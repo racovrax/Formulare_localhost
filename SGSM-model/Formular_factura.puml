@@ -1,0 +1,92 @@
+@startuml
+title Diagrama de clase pentru InterfataFormFactura
+
+class Factura {
+    - client: String
+    - formNumber: String
+    - invoiceDate: Date
+    - vehicleId: Long
+    - vehicleName: String
+    - vehiclePrice: Double
+    - vehicleDetails: String
+    - vat: Double
+    - totalInvoice: Double
+    + getClient(): String
+    + getFormNumber(): String
+    + getInvoiceDate(): Date
+    + getVehicleId(): Long
+    + getVehicleName(): String
+    + getVehiclePrice(): Double
+    + getVehicleDetails(): String
+    + getVat(): Double
+    + getTotalInvoice(): Double
+    + setClient(client: String): void
+    + setFormNumber(formNumber: String): void
+    + setInvoiceDate(invoiceDate: Date): void
+    + setVehicleId(vehicleId: Long): void
+    + setVehicleName(vehicleName: String): void
+    + setVehiclePrice(vehiclePrice: Double): void
+    + setVehicleDetails(vehicleDetails: String): void
+    + setVat(vat: Double): void
+    + setTotalInvoice(totalInvoice: Double): void
+}
+
+class Vehicule {
+    - id: Long
+    - name: String
+    - price: Double
+    - details: String
+    + getId(): Long
+    + getName(): String
+    + getPrice(): Double
+    + getDetails(): String
+    + setId(id: Long): void
+    + setName(name: String): void
+    + setPrice(price: Double): void
+    + setDetails(details: String): void
+}
+
+class FacturaRepository {
+    - entityManager: EntityManager
+    + findAll(): List<Factura>
+    + findById(id: Long): Factura
+    + create(factura: Factura): void
+    + update(factura: Factura): void
+    + delete(id: Long): void
+    + countByClient(client: String): Long
+}
+
+class VehiculeRepository {
+    - entityManager: EntityManager
+    + findAll(): List<Vehicule>
+    + findById(id: Long): Vehicule
+    + create(vehicul: Vehicule): void
+    + update(vehicul: Vehicule): void
+    + delete(id: Long): void
+}
+
+class FacturaServlet {
+    - facturaRepository: FacturaRepository
+    - vehiculeRepository: VehiculeRepository
+    + doGet(request: HttpServletRequest, response: HttpServletResponse): void
+    + doPost(request: HttpServletRequest, response: HttpServletResponse): void
+}
+
+class InterfataFormFactura {
+    - form: HTMLFormElement
+    + loadVehicles(): void
+    + updateVehicleDetails(): void
+    + calculateTotalPrice(): void
+    + updateFormNumber(): void
+    + saveInvoice(): void
+    + cancelInvoice(): void
+    + displayMessage(message: String, isError: boolean): void
+}
+
+FacturaRepository --> Factura : Manages
+VehiculeRepository --> Vehicule : Manages
+FacturaServlet --> FacturaRepository : Uses
+FacturaServlet --> VehiculeRepository : Uses
+InterfataFormFactura --> FacturaServlet : Communicates
+
+@enduml

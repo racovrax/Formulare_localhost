@@ -1,0 +1,77 @@
+@startuml
+actor User
+boundary "Client Form" as Form
+control "ClientServlet" as Servlet
+entity "EntityManager" as EM
+database "Database" as DB
+
+title Client Management
+
+== Add Client ==
+User -> Form : Fill Client Form
+User -> Form : Submit Form (Create)
+Form -> Servlet : POST /api/profil (action=create)
+Servlet -> EM : createEntityManager()
+activate EM
+
+note right of EM : Begin Transaction
+
+Servlet -> EM : persist(Client)
+EM -> DB : INSERT INTO Clients ...
+DB -> EM : Insert Success
+
+note right of EM : Commit Transaction
+
+Servlet -> EM : commit()
+deactivate EM
+
+Servlet -> Form : {"status": "success"}
+
+== Update Client ==
+User -> Form : Select Client
+User -> Form : Modify Client Details
+User -> Form : Submit Form (Update)
+Form -> Servlet : POST /api/profil (action=update)
+Servlet -> EM : createEntityManager()
+activate EM
+
+note right of EM : Begin Transaction
+
+Servlet -> EM : find(Client.class, clientId)
+EM -> DB : SELECT * FROM Clients WHERE id=clientId
+DB -> EM : Client Data
+Servlet -> EM : merge(Client)
+EM -> DB : UPDATE Clients SET ...
+DB -> EM : Update Success
+
+note right of EM : Commit Transaction
+
+Servlet -> EM : commit()
+deactivate EM
+
+Servlet -> Form : {"status": "success"}
+
+== Delete Client ==
+User -> Form : Select Client
+User -> Form : Submit Form (Delete)
+Form -> Servlet : POST /api/profil (action=delete)
+Servlet -> EM : createEntityManager()
+activate EM
+
+note right of EM : Begin Transaction
+
+Servlet -> EM : find(Client.class, clientId)
+EM -> DB : SELECT * FROM Clients WHERE id=clientId
+DB -> EM : Client Data
+Servlet -> EM : remove(Client)
+EM -> DB : DELETE FROM Clients WHERE id=clientId
+DB -> EM : Delete Success
+
+note right of EM : Commit Transaction
+
+Servlet -> EM : commit()
+deactivate EM
+
+Servlet -> Form : {"status": "success"}
+
+@enduml
